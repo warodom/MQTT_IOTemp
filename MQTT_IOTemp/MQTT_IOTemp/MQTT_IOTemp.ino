@@ -69,7 +69,7 @@ void setup()
     Serial.println("WiFi connected");
   }
  
-  if (client.connect("192.168.42.1")) {
+  if (client.connect("IOTemp")) {
     client.subscribe("light");
     client.subscribe("sprinkler");
   }
