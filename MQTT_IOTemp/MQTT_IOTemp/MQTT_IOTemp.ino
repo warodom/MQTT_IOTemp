@@ -4,6 +4,9 @@
 #include <DallasTemperature.h>
 
 #define ONE_WIRE_BUS 13
+#define LightRoom 12
+#define Sprinkler 14
+
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
@@ -31,14 +34,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print(" : ");
   //Serial.write(payload,length);
   Serial.println(msgString);
-  
-  if(msgString == "0") {
-    digitalWrite(16, LOW);
+  if(String(topic) == "light") {
+    if(msgString == "0") digitalWrite(LightRoom, LOW);
+    else digitalWrite(LightRoom, HIGH);
   }
-  else {
-    digitalWrite(16, HIGH);
+  else if(String(topic) == "sprinkler") {
+    if(msgString == "0") digitalWrite(Sprinkler, LOW);
+    else digitalWrite(Sprinkler, HIGH);
   }
-  
 } 
 
 WiFiClient wifiClient;
@@ -46,12 +49,11 @@ PubSubClient client(server, 1883, callback, wifiClient);
  
 void setup()
 { 
-  pinMode(16, OUTPUT);
-  digitalWrite(16, LOW);
+  pinMode(LightRoom, OUTPUT); digitalWrite(LightRoom, LOW);
+  pinMode(Sprinkler, OUTPUT); digitalWrite(Sprinkler, LOW);
   Serial.begin(115200);
   sensors.begin();
   delay(10);
-  Serial.println();
   Serial.println();
 
   WiFi.begin(ssid, password);
@@ -69,6 +71,7 @@ void setup()
  
   if (client.connect("192.168.42.1")) {
     client.subscribe("light");
+    client.subscribe("sprinkler");
   }
   
   sensors.requestTemperatures();
