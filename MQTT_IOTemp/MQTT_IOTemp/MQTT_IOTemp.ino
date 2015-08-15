@@ -6,6 +6,9 @@
 #define ONE_WIRE_BUS 13
 #define LightRoom 12
 #define Sprinkler 14
+#define Touch 2
+
+bool touch_buffer = 0, touch_status = 0;
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
@@ -51,6 +54,7 @@ void setup()
 { 
   pinMode(LightRoom, OUTPUT); digitalWrite(LightRoom, LOW);
   pinMode(Sprinkler, OUTPUT); digitalWrite(Sprinkler, LOW);
+  pinMode(Touch, INPUT);
   Serial.begin(115200);
   sensors.begin();
   delay(10);
@@ -85,7 +89,6 @@ void setup()
  
 void loop()
 {
-  
   if(temp_count > 655000) {
     sensors.requestTemperatures();
     float tempC = sensors.getTempCByIndex(0);
@@ -96,6 +99,20 @@ void loop()
     temp_count = 0;
   }
   else temp_count++;
-  
+  if((digitalRead(Touch) == 0) & (touch_buffer == 0)) {
+    if(touch_status == 0) {
+      client.publish("light","1");
+      touch_status = 1;
+    }
+    else if(touch_status == 1) {
+      client.publish("light","0");
+      touch_status = 0;
+    }
+    touch_buffer = 1;
+  }
+  else if((digitalRead(Touch) == 1) & (touch_buffer == 1)) {
+    //client.publish("light","0");
+    touch_buffer = 0;
+  }
   client.loop();
 }
